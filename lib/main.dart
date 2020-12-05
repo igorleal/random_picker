@@ -9,7 +9,7 @@ class RandomPickerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Random Picker',            
+      title: 'Random Picker',
       home: Items(),
     );
   }
@@ -21,63 +21,121 @@ class Items extends StatefulWidget {
 }
 
 class _ItemsState extends State<Items> {
+  List _items = <String>[];
 
-  final _items = <String>["Item 1", "Item 2", "Item 3", "Item 4", "Item 5"];
-
-  Widget _buildList() {
-      return 
-      Column(
-        
-        children: [
-            
-            Padding(
-              padding: EdgeInsets.all(25.0),
-              child: RaisedButton(
-              onPressed: () {},
-            child: const Text('Pick a random item', style: TextStyle(fontSize: 30, color: Colors.white)),
-            color: Colors.blue,
-            ))
-          ,
-          Expanded(child: ListView.separated(
-        padding: EdgeInsets.all(10.0),
-        itemCount: _items.length,
-        itemBuilder: (context, i) {
-          return _buildRow(_items[i]);
-        },
-        separatorBuilder: (context, i) => Divider(),
-        )),
-        IconButton(
-            onPressed: () {},
-            iconSize: 60,
-            icon: Icon(
-              Icons.add_circle,
-              color: Colors.blue,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(25.0),
-              child: RaisedButton(
-              onPressed: () {},
-            child: const Text('Clear list', style: TextStyle(fontSize: 20, color: Colors.red)),
-            ),
-            )
-        ]
-        )
-      ;
+  void _newItemToList() {
+    int size = _items.length;
+    setState(() {
+      _items.add("Item " + (size + 1).toString());
+    });
   }
 
-Widget _buildRow(String item) {
-  return ListTile(
-    title: Text(
-      item,
-    ),
-  );
-}
+  void _clearList() {
+    setState(() {
+      _items.clear();
+    });
+  }
 
-@override
+  void _pickRandom() {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (BuildContext context) {
+        final String theChosenOne = "This is the chosen one";
+
+        return Scaffold(
+          appBar: AppBar(title: Text("Random Picker")),
+          body: Center(child: Text(theChosenOne))
+        );
+      })
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+        shrinkWrap: true,
+        itemCount: _items.length,
+        itemBuilder: (context, index) {
+          if (_items.isEmpty) {
+            return CircularProgressIndicator();
+          } else {
+            return _singleItemList(index);
+          }
+        });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _buildList(),
+      appBar: AppBar(title: Text("Random Picker")),
+      body: _buildForm(),
+      floatingActionButton: IconButton(
+        onPressed: () => _newItemToList(),
+        iconSize: 60,
+        icon: Icon(
+          Icons.add_circle,
+          color: Colors.blue,
+        ),
+      ),
     );
+  }
+
+  Widget _buildForm() {
+    final _formKey = GlobalKey<FormState>();
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          Expanded(child: _buildList()),
+          Center(
+            child: ButtonBar(mainAxisSize: MainAxisSize.min, children: [
+                  RaisedButton(
+                    onPressed: () => _clearList(),
+                    child: const Text('Clear List',
+                        style: TextStyle(fontSize: 10, color: Colors.white)),
+                    color: Colors.red,
+                  ),
+                  RaisedButton(
+                    onPressed: () => _pickRandom(),
+                    child: const Text('Pick a Random',
+                        style: TextStyle(fontSize: 10, color: Colors.white)),
+                    color: Colors.blue,
+                  )
+                ]),
+          )
+        ],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      ),
+    );
+  }
+
+  Widget _singleItemList(int index) {
+    if (_items.length - 1 < index) {
+      return Container(child: null);
+    } else {
+      String singleItem = _items[index];
+      String counter = (index + 1).toString();
+
+      return Row(
+        children: [
+          Expanded(
+              flex: 1,
+              child: Text(
+                counter,
+                textAlign: TextAlign.center,
+              )),
+          Expanded(
+              flex: 6,
+              child: TextFormField(
+                initialValue: singleItem,
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please enter some text or remove the row';
+                  }
+                  return null;
+                },
+              ))
+        ],
+      );
+    }
   }
 }
