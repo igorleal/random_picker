@@ -1,18 +1,17 @@
 // Copyright 2018 The Flutter team. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:flutter/scheduler.dart';
 
 void main() => runApp(RandomPickerApp());
 
 class RandomPickerApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Random Picker',
-      home: Items()
-    );
+    return MaterialApp(title: 'Random Picker', home: Items());
   }
 }
 
@@ -23,22 +22,24 @@ class Items extends StatefulWidget {
 
 class _ItemsState extends State<Items> {
   List _controllers = <TextEditingController>[];
+  final _scrollController = ScrollController();
 
   void _newItemToList() {
     setState(() {
       _controllers.add(TextEditingController());
+    });
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOut,
+      );
     });
   }
 
   void _removeItem(index) {
     setState(() {
       _controllers.removeAt(index);
-    });
-  }
-
-  void _clearList() {
-    setState(() {
-      _controllers.clear();
     });
   }
 
@@ -50,7 +51,27 @@ class _ItemsState extends State<Items> {
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
           appBar: AppBar(title: Text("Random Picker")),
-          body: Center(child: Text(randomPick)));
+          body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min, children: [Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Text(
+                "The picked item is: ",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 35.0,
+                ),
+              )]) ,
+                Row(mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min, children: [Text(
+                  randomPick,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 60.0,
+                    fontWeight: FontWeight.bold
+                  ))]),
+      ])
+      ));
     }));
   }
 
@@ -64,29 +85,22 @@ class _ItemsState extends State<Items> {
           } else {
             return _singleItemList(index);
           }
-        });
+        },
+        controller: _scrollController);
   }
 
   @override
   void dispose() {
-    _controllers.forEach((element) { element.dispose(); });
+    _controllers.forEach((element) {
+      element.dispose();
+    });
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Random Picker")),
-      body: _buildForm(),
-      floatingActionButton: IconButton(
-        onPressed: () => _newItemToList(),
-        iconSize: 60,
-        icon: Icon(
-          Icons.add_circle,
-          color: Colors.blue,
-        ),
-      ),
-    );
+        appBar: AppBar(title: Text("Random Picker")), body: _buildForm());
   }
 
   Widget _buildForm() {
@@ -96,28 +110,31 @@ class _ItemsState extends State<Items> {
       key: _form,
       child: Column(
         children: [
-          Expanded(child: _controllers.isEmpty ? Center(child: Text("Use the button to add items to the list")) : _buildList()),
-          Center(
-            child: ButtonBar(mainAxisSize: MainAxisSize.min, children: [
-              _controllers.isEmpty
-                  ? null
-                  : RaisedButton(
-                      onPressed: () => _clearList(),
-                      child: const Text('Remove All',
-                          style: TextStyle(fontSize: 10, color: Colors.red)),
-                      color: Colors.white,
-                    ),
-              _controllers.isEmpty
-                  ? null
-                  : ElevatedButton(
-                      onPressed: () => {
-                            if (_form.currentState.validate())
-                              {_pickRandom()}
-                          },
-                      child: const Text('Pick a Random',
-                          style: TextStyle(fontSize: 10, color: Colors.white)))
-            ]),
-          )
+          Expanded(
+              child: _controllers.isEmpty
+                  ? Center(
+                  child: Text(
+                    "Use the button to add items to the list",
+                    style: TextStyle(fontSize: 30),
+                    textAlign: TextAlign.center,
+                  ))
+                  : _buildList()),
+          IconButton(
+            onPressed: () => _newItemToList(),
+            iconSize: 60,
+            icon: Icon(
+              Icons.add_circle,
+              color: Colors.blue,
+            ),
+          ),
+          _controllers.isEmpty
+              ? Container()
+              : Padding(padding: EdgeInsets.all(10), child: ElevatedButton(
+              onPressed: () => {
+                if (_form.currentState.validate()) {_pickRandom()}
+              },
+              child: const Text('Pick a Random',
+                  style: TextStyle(fontSize: 50, color: Colors.white))))
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
       ),
@@ -129,19 +146,17 @@ class _ItemsState extends State<Items> {
       return Container(child: null);
     } else {
       final controller = _controllers[index];
-      String counter = (index + 1).toString();
 
       return Row(
         children: [
           Expanded(
               flex: 1,
-              child: Text(
-                counter,
-                textAlign: TextAlign.center,
-              )),
+              child: Text("",
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 30))),
           Expanded(
-              flex: 5,
+              flex: 10,
               child: TextFormField(
+                style: TextStyle(fontSize: 30),
                 controller: controller,
                 validator: (value) {
                   if (value.isEmpty) {
@@ -151,11 +166,10 @@ class _ItemsState extends State<Items> {
                 },
               )),
           Expanded(
-              flex: 1,
-              child: Center(
-                  child: IconButton(
-                      icon: Icon(Icons.remove_circle),
-                      onPressed: () => _removeItem(index))))
+              flex: 2,
+              child: IconButton(
+                  icon: Icon(Icons.remove_circle),
+                  onPressed: () => _removeItem(index))),
         ],
       );
     }

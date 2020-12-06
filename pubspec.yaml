@@ -1,4 +1,4 @@
-name: random_picker
+name: RandomPicker
 description: An app that picks a random item to a list
 
 publish_to: 'none'
