@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 void main() => runApp(RandomPickerApp());
 
@@ -37,16 +38,15 @@ class _ItemsState extends State<Items> {
   }
 
   void _pickRandom() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (BuildContext context) {
-        final String theChosenOne = "This is the chosen one";
-
-        return Scaffold(
+    final size = _items.length;
+    final randomIndex = new Random().nextInt(size);
+    final String randomPick = _items[randomIndex];
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      return Scaffold(
           appBar: AppBar(title: Text("Random Picker")),
-          body: Center(child: Text(theChosenOne))
-        );
-      })
-    );
+          body: Center(child: Text(randomPick)));
+    }));
   }
 
   Widget _buildList() {
@@ -88,19 +88,19 @@ class _ItemsState extends State<Items> {
           Expanded(child: _buildList()),
           Center(
             child: ButtonBar(mainAxisSize: MainAxisSize.min, children: [
-                  RaisedButton(
-                    onPressed: () => _clearList(),
-                    child: const Text('Clear List',
-                        style: TextStyle(fontSize: 10, color: Colors.white)),
-                    color: Colors.red,
-                  ),
-                  RaisedButton(
-                    onPressed: () => _pickRandom(),
-                    child: const Text('Pick a Random',
-                        style: TextStyle(fontSize: 10, color: Colors.white)),
-                    color: Colors.blue,
-                  )
-                ]),
+              _items.isEmpty ? null : RaisedButton(
+                onPressed: () => _clearList(),
+                child: const Text('Clear List',
+                    style: TextStyle(fontSize: 10, color: Colors.red)),
+                color: Colors.white,
+              ),
+              _items.isEmpty ? null : ElevatedButton(
+                  onPressed: () => {
+                        if (_formKey.currentState.validate()) {_pickRandom()}
+                      },
+                  child: const Text('Pick a Random',
+                      style: TextStyle(fontSize: 10, color: Colors.white)))
+            ]),
           )
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
