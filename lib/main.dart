@@ -11,7 +11,7 @@ class RandomPickerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Random Picker',
-      home: Items(),
+      home: Items()
     );
   }
 }
@@ -96,7 +96,7 @@ class _ItemsState extends State<Items> {
       key: _form,
       child: Column(
         children: [
-          Expanded(child: _buildList()),
+          Expanded(child: _controllers.isEmpty ? Center(child: Text("Use the button to add items to the list")) : _buildList()),
           Center(
             child: ButtonBar(mainAxisSize: MainAxisSize.min, children: [
               _controllers.isEmpty
