@@ -22,25 +22,30 @@ class Items extends StatefulWidget {
 }
 
 class _ItemsState extends State<Items> {
-  List _items = <String>[];
+  List _controllers = <TextEditingController>[];
 
   void _newItemToList() {
-    int size = _items.length;
     setState(() {
-      _items.add("Item " + (size + 1).toString());
+      _controllers.add(TextEditingController());
+    });
+  }
+
+  void _removeItem(index) {
+    setState(() {
+      _controllers.removeAt(index);
     });
   }
 
   void _clearList() {
     setState(() {
-      _items.clear();
+      _controllers.clear();
     });
   }
 
   void _pickRandom() {
-    final size = _items.length;
+    final size = _controllers.length;
     final randomIndex = new Random().nextInt(size);
-    final String randomPick = _items[randomIndex];
+    final String randomPick = _controllers[randomIndex].text;
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
@@ -52,14 +57,20 @@ class _ItemsState extends State<Items> {
   Widget _buildList() {
     return ListView.builder(
         shrinkWrap: true,
-        itemCount: _items.length,
+        itemCount: _controllers.length,
         itemBuilder: (context, index) {
-          if (_items.isEmpty) {
+          if (_controllers.isEmpty) {
             return CircularProgressIndicator();
           } else {
             return _singleItemList(index);
           }
         });
+  }
+
+  @override
+  void dispose() {
+    _controllers.forEach((element) { element.dispose(); });
+    super.dispose();
   }
 
   @override
@@ -79,27 +90,32 @@ class _ItemsState extends State<Items> {
   }
 
   Widget _buildForm() {
-    final _formKey = GlobalKey<FormState>();
+    final _form = GlobalKey<FormState>();
 
     return Form(
-      key: _formKey,
+      key: _form,
       child: Column(
         children: [
           Expanded(child: _buildList()),
           Center(
             child: ButtonBar(mainAxisSize: MainAxisSize.min, children: [
-              _items.isEmpty ? null : RaisedButton(
-                onPressed: () => _clearList(),
-                child: const Text('Clear List',
-                    style: TextStyle(fontSize: 10, color: Colors.red)),
-                color: Colors.white,
-              ),
-              _items.isEmpty ? null : ElevatedButton(
-                  onPressed: () => {
-                        if (_formKey.currentState.validate()) {_pickRandom()}
-                      },
-                  child: const Text('Pick a Random',
-                      style: TextStyle(fontSize: 10, color: Colors.white)))
+              _controllers.isEmpty
+                  ? null
+                  : RaisedButton(
+                      onPressed: () => _clearList(),
+                      child: const Text('Remove All',
+                          style: TextStyle(fontSize: 10, color: Colors.red)),
+                      color: Colors.white,
+                    ),
+              _controllers.isEmpty
+                  ? null
+                  : ElevatedButton(
+                      onPressed: () => {
+                            if (_form.currentState.validate())
+                              {_pickRandom()}
+                          },
+                      child: const Text('Pick a Random',
+                          style: TextStyle(fontSize: 10, color: Colors.white)))
             ]),
           )
         ],
@@ -109,10 +125,10 @@ class _ItemsState extends State<Items> {
   }
 
   Widget _singleItemList(int index) {
-    if (_items.length - 1 < index) {
+    if (_controllers.length - 1 < index) {
       return Container(child: null);
     } else {
-      String singleItem = _items[index];
+      final controller = _controllers[index];
       String counter = (index + 1).toString();
 
       return Row(
@@ -124,16 +140,22 @@ class _ItemsState extends State<Items> {
                 textAlign: TextAlign.center,
               )),
           Expanded(
-              flex: 6,
+              flex: 5,
               child: TextFormField(
-                initialValue: singleItem,
+                controller: controller,
                 validator: (value) {
                   if (value.isEmpty) {
                     return 'Please enter some text or remove the row';
                   }
                   return null;
                 },
-              ))
+              )),
+          Expanded(
+              flex: 1,
+              child: Center(
+                  child: IconButton(
+                      icon: Icon(Icons.remove_circle),
+                      onPressed: () => _removeItem(index))))
         ],
       );
     }
