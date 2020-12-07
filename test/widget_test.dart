@@ -10,6 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:RandomPicker/main.dart';
+import 'package:RandomPicker/result.dart';
 
 class MockNavigatorObserver extends Mock implements NavigatorObserver {}
 
@@ -70,10 +71,17 @@ void main() {
     await tester.pump();
 
     await tester.tap(find.byType(ElevatedButton));
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle(const Duration(milliseconds: 100));
+
+    expect(find.byType(ResultPage), findsOneWidget);
+  });
+
+  testWidgets('ResultPage should show the item picked', (WidgetTester tester) async {
+    await tester.pumpWidget(
+        MaterialApp(home: ResultPage(randomPick: "the item"))
+    );
 
     expect(find.text("The picked item is: "), findsOneWidget);
-    expect(find.text("the only item"), findsNWidgets(2));
-
+    expect(find.text("the item"), findsOneWidget);
   });
 }

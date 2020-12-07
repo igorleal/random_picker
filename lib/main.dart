@@ -1,6 +1,7 @@
 // Copyright 2018 The Flutter team. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import 'package:RandomPicker/result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
@@ -47,32 +48,8 @@ class _ItemsState extends State<Items> {
     final size = _controllers.length;
     final randomIndex = new Random().nextInt(size);
     final String randomPick = _controllers[randomIndex].text;
-    Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
-      return Scaffold(
-          appBar: AppBar(title: Text("Random Picker")),
-          body: Center(child: Column(mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min, children: [Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [Text(
-                "The picked item is: ",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 35.0,
-                ),
-              )]) ,
-                Row(mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min, children: [Text(
-                  randomPick,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 60.0,
-                    fontWeight: FontWeight.bold
-                  ))]),
-      ])
-      ));
-    }));
+    Navigator.of(context).push(new MaterialPageRoute(
+        builder: (context) => ResultPage(randomPick: randomPick)));
   }
 
   Widget _buildList() {
@@ -113,11 +90,11 @@ class _ItemsState extends State<Items> {
           Expanded(
               child: _controllers.isEmpty
                   ? Center(
-                  child: Text(
-                    "Use the button to add items to the list",
-                    style: TextStyle(fontSize: 30),
-                    textAlign: TextAlign.center,
-                  ))
+                      child: Text(
+                      "Use the button to add items to the list",
+                      style: TextStyle(fontSize: 30),
+                      textAlign: TextAlign.center,
+                    ))
                   : _buildList()),
           IconButton(
             onPressed: () => _newItemToList(),
@@ -129,12 +106,14 @@ class _ItemsState extends State<Items> {
           ),
           _controllers.isEmpty
               ? Container()
-              : Padding(padding: EdgeInsets.all(10), child: ElevatedButton(
-              onPressed: () => {
-                if (_form.currentState.validate()) {_pickRandom()}
-              },
-              child: const Text('Pick a Random',
-                  style: TextStyle(fontSize: 50, color: Colors.white))))
+              : Padding(
+                  padding: EdgeInsets.all(10),
+                  child: ElevatedButton(
+                      onPressed: () => {
+                            if (_form.currentState.validate()) {_pickRandom()}
+                          },
+                      child: const Text('Pick a Random',
+                          style: TextStyle(fontSize: 45, color: Colors.white))))
         ],
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
       ),
