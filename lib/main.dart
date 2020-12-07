@@ -1,6 +1,7 @@
 // Copyright 2018 The Flutter team. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import 'package:RandomPicker/list_item_form.dart';
 import 'package:RandomPicker/result.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,7 +39,7 @@ class _ItemsState extends State<Items> {
     });
   }
 
-  void _removeItem(index) {
+  void _removeItem(int index) {
     setState(() {
       _controllers.removeAt(index);
     });
@@ -124,32 +125,10 @@ class _ItemsState extends State<Items> {
     if (_controllers.length - 1 < index) {
       return Container(child: null);
     } else {
-      final controller = _controllers[index];
-
-      return Row(
-        children: [
-          Expanded(
-              flex: 1,
-              child: Text("",
-                  textAlign: TextAlign.center, style: TextStyle(fontSize: 30))),
-          Expanded(
-              flex: 10,
-              child: TextFormField(
-                style: TextStyle(fontSize: 30),
-                controller: controller,
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Please enter some text or remove the row';
-                  }
-                  return null;
-                },
-              )),
-          Expanded(
-              flex: 2,
-              child: IconButton(
-                  icon: Icon(Icons.remove_circle),
-                  onPressed: () => _removeItem(index))),
-        ],
+      return ListItemForm(
+          controller: _controllers[index],
+          removeItemFunction: _removeItem,
+          index: index
       );
     }
   }
